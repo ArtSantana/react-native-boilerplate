@@ -1,0 +1,155 @@
+clear
+echo 'Enter with your project name(Use somente camelCase ou PascalCase): '
+read projectName
+clear
+npx react-native init $projectName
+
+cd $projectName
+
+# Creating the folders and files structure
+mkdir src
+mkdir src/pages
+mkdir src/pages/Home
+mkdir src/components
+mkdir src/services
+mkdir src/assets
+mkdir src/locales
+mkdir src/store
+mkdir src/store/ducks
+mkdir src/store/sagas
+touch src/routes.js
+touch src/assets/common.js
+touch src/store/sagas/index.js
+touch src/store/ducks/index.js
+touch src/store/ducks/auth.js
+touch src/store/index.js
+touch src/services/options.js
+rm App.js
+touch App.js
+touch src/pages/Home/index.js
+
+yarn add react-native-vector-icons
+# Redux and Saga Dependencies
+yarn add react-redux
+yarn add redux
+yarn add redux-saga
+yarn add redux-persist
+yarn add react-native-responsive-screen
+yarn add @react-native-community/async-storage
+# Navigation
+yarn add @react-navigation/native
+yarn add react-native-reanimated react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-community/masked-view
+yarn add @react-navigation/stack
+# Validation if the user wants to install additional packages
+# if [ "$camera" == "y" ]
+# then
+#   yarn add react-native-camera
+# fi
+# Starting to write the base for files
+
+echo 'import React from "react";
+import Routes from "./src/routes";
+import {Provider} from "react-redux";
+import {PersistGate} from "redux-persist/integration/react";
+import {store, persistor} from "./src/store";
+
+
+//  Configure your redux and redux-persist in order to use this setup
+
+// export default function App() {
+//   return (
+//     <Provider store={store}>
+//       <PersistGate loading={null} persistor={persistor}>
+//         <Routes />
+//       </PersistGate>
+//     </Provider>
+//   );
+// } 
+
+
+export default function App() {
+  return (
+    <Routes />
+  )
+}' >> App.js
+
+echo 'import React from "react";
+import {View, Text} from "react-native";
+
+export default function Home() {
+  return (
+    <View>
+      <Text>Home Page</Text>
+    </View>
+  );
+}
+' >> src/pages/Home/index.js
+
+echo 'import React from "react";
+import {NavigationContainer} from "@react-navigation/native";
+import {createStackNavigator} from "@react-navigation/stack";
+import Home from "./pages/Home";
+
+const Stack = createStackNavigator();
+
+export default function Routes() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Home" component={Home} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}' >> src/routes.js
+
+echo 'import {createStore, applyMiddleware} from "redux";
+import AsyncStorage from "@react-native-community/async-storage";
+import {persistStore, persistReducer, REHYDRATE} from "redux-persist";
+import createSagaMiddleware from "redux-saga";
+import reducer from "./ducks";
+import rootSaga from "./sagas";
+
+const sagaMiddleware = createSagaMiddleware();
+
+const persistConfig = {
+  key: "root",
+  storage: AsyncStorage,  
+};
+
+const persistedReducer = persistReducer(persistConfig, reducer);
+const store = createStore(persistedReducer, applyMiddleware(sagaMiddleware));
+
+const persistor = persistStore(store);
+export {store, persistor};
+sagaMiddleware.run(rootSaga);
+' >> src/store/index.js
+
+echo 'import {all, spawn, takeEvery} from "redux-saga/effects";
+
+export default function* rootSaga() {
+  // yield takeEvery(TYPE.ACTION, SAGAMIDDLEWARE)
+}' >> src/store/sagas/index.js
+
+echo 'import {combineReducers} from "redux";
+import auth from "./auth";
+
+export default combineReducers({
+  auth,
+});' >> src/store/ducks/index.js
+
+
+echo 'const INITIAL_STATE = {
+  isLogged: false,
+};
+
+export default function auth(state = INITIAL_STATE, action) {
+  switch (action.type) {
+    default:
+      return state;
+  }
+}
+' >> src/store/ducks/auth.js
+
+clear
+
+echo Project created, now you can 'cd' $projectName and 'yarn start'
