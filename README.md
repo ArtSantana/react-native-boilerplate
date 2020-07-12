@@ -24,7 +24,7 @@ But the script does not configure the gradle and pods.
 Setting up the script
 
 ```bash
- git clone https://github.com/ArtSantana/React-Native-INIT
+ git clone https://github.com/ArtSantana/React-Native-Script-Structure
  cd React-Native-INIT
  sudo cp rninit /usr/bin
 ```
