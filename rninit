@@ -1,5 +1,5 @@
 clear
-echo 'Enter with your project name(Use somente camelCase ou PascalCase): '
+echo 'Project Name(Use only camelCase or PascalCase): '
 read projectName
 clear
 npx react-native init $projectName
