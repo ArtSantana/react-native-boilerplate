@@ -1,98 +1,200 @@
 clear
 echo 'Project Name(Use only camelCase or PascalCase): '
 read projectName
-clear
-npx react-native init $projectName
+echo 'Enter project version, i.e 0.62.0 (or just keep empty):'
+read version
+
+if [ -z "$version" ]
+then
+  npx react-native init $projectName
+else
+  npx react-native init $projectName --version $version
+fi
 
 cd $projectName
 
 # Creating the folders and files structure
 mkdir src
+mkdir src/assets
+mkdir src/assets/images
+mkdir src/components
+mkdir src/hooks
+mkdir src/locales
+mkdir src/models
 mkdir src/pages
 mkdir src/pages/Home
-mkdir src/components
+mkdir src/routes
 mkdir src/services
-mkdir src/assets
-mkdir src/locales
 mkdir src/store
 mkdir src/store/ducks
 mkdir src/store/sagas
-touch src/routes.js
-touch src/assets/common.js
-touch src/store/sagas/index.js
-touch src/store/ducks/index.js
-touch src/store/ducks/auth.js
-touch src/store/index.js
-touch src/services/options.js
+mkdir src/styles
+mkdir src/utils
+touch src/components/index.ts
+touch src/hooks/index.ts
+touch src/pages/index.ts
+touch src/routes/index.tsx
+touch src/store/sagas/index.ts
+touch src/store/ducks/index.ts
+touch src/store/ducks/auth.ts
+touch src/store/index.ts
+touch src/styles/styled-components.ts
+touch src/styles/styled.d.ts
+touch src/styles/theme.ts
+touch src/services/options.ts
 rm App.js
-touch App.js
-touch src/pages/Home/index.js
+touch src/App.tsx
+touch src/pages/Home/index.tsx
 
-yarn add react-native-vector-icons
+yarn add react-native-vector-icons styled-components
+yarn add --dev @types/react @types/react-native @types/react-native-vector-icons @types/react-redux @types/styled-components @types/styled-components-react-native babel-plugin-module-resolver typescript @types/jest @types/react-test-renderer react-addons-test-utils
+
+
 # Redux and Saga Dependencies
 yarn add react-redux
 yarn add redux
 yarn add redux-saga
 yarn add redux-persist
+yard add @reduxjs/toolkit
 yarn add react-native-responsive-screen
 yarn add @react-native-community/async-storage
 # Navigation
 yarn add @react-navigation/native
 yarn add react-native-reanimated react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-community/masked-view
 yarn add @react-navigation/stack
-# Validation if the user wants to install additional packages
-# if [ "$camera" == "y" ]
-# then
-#   yarn add react-native-camera
-# fi
-# Starting to write the base for files
 
-echo 'import React from "react";
-import Routes from "./src/routes";
-import {Provider} from "react-redux";
-import {PersistGate} from "redux-persist/integration/react";
-import {store, persistor} from "./src/store";
+# Typescript Configuration
+yarn add --dev react-native-typescript-transformer
+yarn tsc --init --pretty --jsx react-native
+touch rn-cli.config.js
+
+echo 'module.exports = {
+  getTransformModulePath() {
+    return require.resolve("react-native-typescript-transformer");
+  },
+  getSourceExts() {
+    return ["ts", "tsx"];
+  }
+};' >> rn-cli.config.js
+
+rm tsconfig.json
+touch tsconfig.json
+
+echo '{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-native",
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@components": ["./components"],
+      "@ducks/*": ["./store/ducks/*"],
+      "@hooks": ["./hooks"],
+      "@models/*": ["./models/*"],
+      "@pages": ["./pages"],
+      "@services/*": ["./services/*"],
+      "@store": ["./store"],
+      "@theme": ["./styles/theme"]
+    }
+  }
+}' >> tsconfig.json
+
+echo 'module.exports = {
+  presets: ['"'"'module:metro-react-native-babel-preset'"'"'],
+  plugins: [
+    [
+      '"'"'module-resolver'"'"',
+      {
+        root: ['"'"'.'"'"'],
+        extensions: [
+          '"'"'.ios.ts'"'"',
+          '"'"'.android.ts'"'"',
+          '"'"'.ts'"'"',
+          '"'"'.ios.tsx'"'"',
+          '"'"'.android.tsx'"'"',
+          '"'"'.tsx'"'"',
+          '"'"'.jsx'"'"',
+          '"'"'.js'"'"',
+          '"'"'.json'"'"',
+        ],
+        alias: {
+          '"'"'@components'"'"': '"'"'./src/components'"'"',
+          '"'"'@ducks'"'"': '"'"'./src/store/ducks'"'"',
+          '"'"'@hooks'"'"': '"'"'./src/hooks'"'"',
+          '"'"'@models'"'"': '"'"'./src/models'"'"',
+          '"'"'@pages'"'"': '"'"'./src/pages'"'"',
+          '"'"'@services'"'"': '"'"'./src/services'"'"',
+          '"'"'@store'"'"': '"'"'./src/store'"'"',
+          '"'"'@theme'"'"': '"'"'./src/styles/theme'"'"',
+        },
+      },
+    ],
+  ],
+};' >> babel.config.js
+
+echo 'import React from '"'"'react'"'"';
+import theme from '"'"'@theme'"'"';
+import {ThemeProvider} from '"'"'styled-components'"'"';
+import {Routes} from '"'"'./routes'"'"';
+//import {Provider} from '"'"'react-redux'"'"';
+//import {PersistGate} from '"'"'redux-persist/integration/react'"'"';
+//import {store, persistor} from '"'"'@store'"'"';
 
 
-//  Configure your redux and redux-persist in order to use this setup
+//  Configure your redux in order to use this setup
 
-// export default function App() {
+// const App: React.FC = () => {
 //   return (
 //     <Provider store={store}>
 //       <PersistGate loading={null} persistor={persistor}>
-//         <Routes />
+//         <ThemeProvider theme={theme}>
+//           <Routes />
+//         </ThemeProvider>
 //       </PersistGate>
 //     </Provider>
 //   );
-// } 
+// };
 
 
-export default function App() {
-  return (
-    <Routes />
-  )
-}' >> App.js
+const App: React.FC = () => {
+   return (
+    <ThemeProvider theme={theme}>
+      <Routes />
+    </ThemeProvider>
 
-echo 'import React from "react";
-import {View, Text} from "react-native";
+   )
+ };
+ 
+export {App};'>> ./src/App.tsx
 
-export default function Home() {
+echo 'import React from '"'"'react'"'"';
+import {View, Text} from '"'"'react-native'"'"';
+
+const Home: React.FC = () => {
   return (
     <View>
       <Text>Home Page</Text>
     </View>
   );
-}
-' >> src/pages/Home/index.js
+};
 
-echo 'import React from "react";
-import {NavigationContainer} from "@react-navigation/native";
-import {createStackNavigator} from "@react-navigation/stack";
-import Home from "./pages/Home";
+export {Home};' >> ./src/pages/Home/index.tsx
+
+echo 'export {Home} from '"'"'./Home'"'"';' >> ./src/pages/index.ts
+
+echo 'import React from '"'"'react'"'"';
+import {Home} from '"'"'@pages'"'"';
+import {NavigationContainer} from '"'"'@react-navigation/native'"'"';
+import {createStackNavigator} from '"'"'@react-navigation/stack'"'"';
 
 const Stack = createStackNavigator();
 
-export default function Routes() {
+const Routes: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -100,56 +202,91 @@ export default function Routes() {
       </Stack.Navigator>
     </NavigationContainer>
   );
-}' >> src/routes.js
-
-echo 'import {createStore, applyMiddleware} from "redux";
-import AsyncStorage from "@react-native-community/async-storage";
-import {persistStore, persistReducer, REHYDRATE} from "redux-persist";
-import createSagaMiddleware from "redux-saga";
-import reducer from "./ducks";
-import rootSaga from "./sagas";
-
-const sagaMiddleware = createSagaMiddleware();
-
-const persistConfig = {
-  key: "root",
-  storage: AsyncStorage,  
 };
 
-const persistedReducer = persistReducer(persistConfig, reducer);
-const store = createStore(persistedReducer, applyMiddleware(sagaMiddleware));
+export {Routes};' >> ./src/routes/index.tsx
 
-const persistor = persistStore(store);
-export {store, persistor};
-sagaMiddleware.run(rootSaga);
-' >> src/store/index.js
+echo '//import AsyncStorage from '"'"'@react-native-community/async-storage'"'"';
+//import createSagaMiddleware from '"'"'redux-saga'"'"';
+//import reducer from '"'"'./ducks'"'"';
+//import rootSaga from '"'"'./sagas'"'"';
+//import {INITIAL_STATE as auth} from '"'"'./ducks/auth'"'"';
+//import {configureStore} from '"'"'@reduxjs/toolkit'"'"';
+//import {persistStore, persistReducer} from '"'"'redux-persist'"'"';
+//
+//const sagaMiddleware = createSagaMiddleware();
+//
+//const persistConfig = {
+//  key: '"'"'root'"'"',
+//  storage: AsyncStorage,
+//};
+//
+//export interface ApplicationState {}
+//
+//export const initialStateApplication: ApplicationState = {};
+//
+//const persistedReducer = persistReducer(persistConfig, reducer);
+//const store = configureStore({
+//  reducer: persistedReducer,
+//  middleware: [sagaMiddleware],
+//  preloadedState: initialStateApplication,
+//});
+//
+//const persistor = persistStore(store);
+//export {store, persistor};
+//sagaMiddleware.run(rootSaga);' >> ./src/store/index.ts
 
-echo 'import {all, spawn, takeEvery} from "redux-saga/effects";
+rm index.js
+touch index.js
+echo '/**
+ * @format
+ */
 
-export default function* rootSaga() {
-  // yield takeEvery(TYPE.ACTION, SAGAMIDDLEWARE)
-}' >> src/store/sagas/index.js
+import {AppRegistry} from '"'"'react-native'"'"';
+import {App} from '"'"'./src/App'"'"';
+import {name as appName} from '"'"'./app.json'"'"';
 
-echo 'import {combineReducers} from "redux";
-import auth from "./auth";
+console.disableYellowBox = true;
+AppRegistry.registerComponent(appName, () => App);'>> index.js
 
-export default combineReducers({
-  auth,
-});' >> src/store/ducks/index.js
+# styled-components setup for theme
+echo 'import * as styledComponents from '"'"'styled-components/native'"'"';
 
+import {Theme as ThemeInterface} from '"'"'./styled'"'"';
 
-echo 'const INITIAL_STATE = {
-  isLogged: false,
-};
+const {
+  default: styled,
+  css,
+  ThemeProvider,
+} = styledComponents as styledComponents.ReactNativeThemedStyledComponentsModule<
+  ThemeInterface
+>;
 
-export default function auth(state = INITIAL_STATE, action) {
-  switch (action.type) {
-    default:
-      return state;
-  }
+export {css, ThemeProvider};
+export default styled;
+' >> ./src/styles/styled-components.ts
+
+echo '/* eslint @typescript-eslint/no-empty-interface: "off" */
+
+import '"'"'styled-components/native'"'"';
+
+import theme from '"'"'./theme'"'"';
+
+export type Theme = typeof theme;
+
+declare module '"'"'styled-components/native'"'"' {
+  export interface DefaultTheme extends Theme {}
 }
-' >> src/store/ducks/auth.js
+' >> ./src/styles/styled.d.ts
+
+echo 'const theme = {
+  colors: {},
+};
+
+export default theme;' >> ./src/styles/theme.ts
+
+yarn lint --fix
 
 clear
 
-echo Project created, now you can 'cd' $projectName and 'yarn start'
+echo Project created, now you can 'cd' $projectName and run 'yarn start'
